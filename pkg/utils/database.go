@@ -3,63 +3,46 @@ package database
 import (
 	"fmt"
 
-	"github.com/adham90/boilerplate/pkg/entity"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"database/sql"
+
+	_ "github.com/lib/pq"
 )
 
-// PGConfig database config
+// Config database config
 type Config struct {
-	// Optional.
 	Username, Password string
-
-	// Host of the MySQL instance.
-	//
-	// If set, UnixSocket should be unset.
-	Host string
-
-	// DatabaseName as string
-	DatabaseName string
-
-	// Port of the MySQL instance.
-	//
-	// If set, UnixSocket should be unset.
-	Port string
-
-	LogMode bool
+	Host               string
+	DatabaseName       string
+	Port               string
+	LogMode            bool
 }
 
-func (c Config) connString() string {
+func (c Config) connStr() string {
 	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", c.Username, c.Password, c.DatabaseName, c.Host, c.Port)
 }
 
 // Database object
 type Database struct {
-	Conn *gorm.DB
+	DB *sql.DB
 }
 
 // New Database object
 func New(c Config) (*Database, error) {
-	conn, err := gorm.Open("postgres", c.connString())
-	conn.LogMode(c.LogMode)
+	db, err := sql.Open("postgres", c.connStr())
 	if err != nil {
-		conn.Close()
+		db.Close()
 		return nil, fmt.Errorf("pg: could not get a connection: %v", err)
 	}
 
-	db := &Database{
-		Conn: conn,
-	}
-
-	return db, nil
+	return &Database{DB: db}, nil
 }
 
 // Migrate will update the database with new add col and tables
 func (db *Database) Migrate() {
-	db.Conn.AutoMigrate(entity.User{})
+	// db.DB.AutoMigrate(entity.User{})
 }
 
 // Close the database connection
 func (db *Database) Close() {
-	db.Conn.Close()
+	db.DB.Close()
 }

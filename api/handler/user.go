@@ -1,20 +1,21 @@
 package handler
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 
 	"github.com/adham90/boilerplate/pkg/entity"
-	pkg "github.com/adham90/boilerplate/pkg/user"
+	us "github.com/adham90/boilerplate/pkg/user/service"
 	"github.com/go-chi/chi"
 )
 
-func userIndex(s pkg.Service) http.Handler {
+func userIndex(s us.Service) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var user *entity.User
 		var err error
 
-		user, err = s.Find("5")
+		user, err = s.Find("1")
 
 		if err != nil {
 			panic(err)
@@ -27,6 +28,8 @@ func userIndex(s pkg.Service) http.Handler {
 	})
 }
 
-func MakeUserHandlers(r *chi.Mux, service pkg.Service) {
-	r.Method("get", "/", userIndex(service))
+func MakeUserHandlers(r *chi.Mux, db *sql.DB) {
+	us := us.New(db)
+
+	r.Method("get", "/", userIndex(us))
 }

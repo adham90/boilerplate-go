@@ -1,16 +1,13 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
 
-	"github.com/adham90/boilerplate/api/handler"
+	"github.com/adham90/boilerplate/pkg/user"
 	"github.com/adham90/boilerplate/pkg/utils"
-	"github.com/go-chi/chi"
 )
 
 func main() {
-	r := chi.NewRouter()
-
 	//  TODO: read from database.yml file <09-06-18, adham> //
 	dbconfig := database.Config{
 		Username:     "postgres",
@@ -29,7 +26,8 @@ func main() {
 
 	db.Migrate()
 
-	handler.MakeUserHandlers(r, db.DB)
+	us := user.NewService(db.DB)
 
-	http.ListenAndServe(":8080", r)
+	u, err := us.Find("1")
+	fmt.Println(u.GithubID)
 }

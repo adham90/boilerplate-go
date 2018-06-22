@@ -1,28 +1,40 @@
 package repository
 
 import (
+	"database/sql"
+	"fmt"
+
 	e "github.com/adham90/boilerplate/pkg/entity"
-	"github.com/adham90/boilerplate/pkg/user"
-	"github.com/jinzhu/gorm"
 )
 
-type repository struct {
-	db *gorm.DB
+// PG postgres database struct
+type PG struct {
+	DB *sql.DB
 }
 
-func NewPGRepository(database *gorm.DB) user.Repository {
-	return &repository{
-		db: database,
-	}
-}
+// const fiels = [
+// 	id,
+// 	uuid,
+// 	github_id,
+// ]
 
-func (r *repository) Find(id string) (*e.User, error) {
-	result := e.User{}
+func (pg *PG) Find(id string) (*e.User, error) {
+	db := pg.DB
 
-	err := r.db.Find(&result, id).Error
+	r := e.User{}
+
+	q := fmt.Sprintf("SELECT id, uuid, github_id FROM users WHERE id = %s limit 1", id)
+
+	err := db.QueryRow(q).Scan(
+		&r.ID,
+		&r.UUID,
+		&r.GithubID,
+	)
+
 	if err != nil {
-		return nil, err
+
 	}
 
-	return &result, nil
+	fmt.Println(r)
+	return &r, nil
 }
