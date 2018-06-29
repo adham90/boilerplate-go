@@ -7,18 +7,11 @@ import (
 	e "github.com/adham90/boilerplate/pkg/entity"
 )
 
-// PG postgres database struct
-type PG struct {
-	DB *sql.DB
-}
+// Postgres database struct
+type Postgres struct{ DB *sql.DB }
 
-// const fiels = [
-// 	id,
-// 	uuid,
-// 	github_id,
-// ]
-
-func (pg *PG) Find(id string) (*e.User, error) {
+// Find return user by id
+func (pg *Postgres) Find(id string) (*e.User, error) {
 	db := pg.DB
 
 	r := e.User{}
@@ -30,11 +23,9 @@ func (pg *PG) Find(id string) (*e.User, error) {
 		&r.UUID,
 		&r.GithubID,
 	)
-
 	if err != nil {
-
+		return nil, err
 	}
 
-	fmt.Println(r)
 	return &r, nil
 }

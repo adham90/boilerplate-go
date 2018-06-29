@@ -4,7 +4,7 @@ import (
 	e "github.com/adham90/boilerplate/pkg/entity"
 )
 
-//Find user
-func (s *Service) Find(id string) (*e.User, error) {
-	return s.PG.Find(id)
+// FindByID return user by it's id
+func (s *Service) FindByID(id string) (*e.User, error) {
+	return s.Postgres.Find(id)
 }

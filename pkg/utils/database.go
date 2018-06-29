@@ -8,17 +8,23 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Config database config
+// Config database configration struct
 type Config struct {
 	Username, Password string
 	Host               string
-	DatabaseName       string
+	Name               string
 	Port               string
 	LogMode            bool
 }
 
 func (c Config) connStr() string {
-	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable", c.Username, c.Password, c.DatabaseName, c.Host, c.Port)
+	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
+		c.Username,
+		c.Password,
+		c.Name,
+		c.Host,
+		c.Port,
+	)
 }
 
 // Database object
@@ -27,7 +33,7 @@ type Database struct {
 }
 
 // New Database object
-func New(c Config) (*Database, error) {
+func New(c *Config) (*Database, error) {
 	db, err := sql.Open("postgres", c.connStr())
 	if err != nil {
 		db.Close()
