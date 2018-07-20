@@ -1,54 +1,53 @@
-package database
+package utils
 
 import (
-	"fmt"
-
-	"database/sql"
-
-	_ "github.com/lib/pq"
+	"github.com/go-pg/pg"
+	"github.com/go-pg/pg/orm"
 )
 
-// Config database configration struct
-type Config struct {
+// Database object
+type Database struct {
 	Username, Password string
 	Host               string
 	Name               string
 	Port               string
 	LogMode            bool
+	DB                 *pg.DB
 }
 
-func (c Config) connStr() string {
-	return fmt.Sprintf("user=%s password=%s dbname=%s host=%s port=%s sslmode=disable",
-		c.Username,
-		c.Password,
-		c.Name,
-		c.Host,
-		c.Port,
-	)
-}
+// Open create new Database connection
+func (d *Database) Open() *pg.DB {
+	d.DB = pg.Connect(&pg.Options{
+		Database: d.Name,
+		User:     d.Username,
+		Password: d.Password,
+	})
 
-// Database object
-type Database struct {
-	DB *sql.DB
-}
-
-// New Database object
-func New(c *Config) (*Database, error) {
-	db, err := sql.Open("postgres", c.connStr())
+	var n int
+	_, err := d.DB.QueryOne(pg.Scan(&n), "SELECT 1")
 	if err != nil {
-		db.Close()
-		return nil, fmt.Errorf("pg: could not get a connection: %v", err)
+		return nil
 	}
 
-	return &Database{DB: db}, nil
+	return d.DB
 }
 
 // Migrate will update the database with new add col and tables
-func (db *Database) Migrate() {
-	// db.DB.AutoMigrate(entity.User{})
-}
+func (d *Database) Migrate(entities ...interface{}) error {
+	if d.DB == nil {
+		d.Open()
+	}
+	db := d.DB
 
-// Close the database connection
-func (db *Database) Close() {
-	db.DB.Close()
+	for _, entity := range entities {
+		err := db.CreateTable(entity, &orm.CreateTableOptions{
+			Temp:        false,
+			IfNotExists: true,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

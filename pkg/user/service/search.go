@@ -5,6 +5,10 @@ import (
 )
 
 // FindByID return user by it's id
-func (s *Service) FindByID(id string) (*e.User, error) {
+func (s *Service) FindByID(id int) (*e.User, error) {
 	return s.Postgres.Find(id)
+}
+
+func (s Service) CreateUser(u e.User) (*e.User, error) {
+	return s.Postgres.Save(u)
 }

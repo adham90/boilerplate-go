@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/adham90/boilerplate/api/handler"
+	e "github.com/adham90/boilerplate/pkg/entity"
 	"github.com/adham90/boilerplate/pkg/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-redis/redis"
@@ -22,13 +24,22 @@ var GOENV = os.Getenv("GOENV")
 func main() {
 	router := chi.NewRouter()
 
-	db, err := database.New(dbConf(GOENV))
-	if err != nil {
-		panic(err)
-	}
-	defer db.Close()
+	db := new(utils.Database)
 
-	db.Migrate()
+	// set database config from database.ini file
+	cfg, _ := ini.Load("./api/config/database.ini")
+	cfg.MapTo(db)
+	cfg.Section(GOENV).MapTo(db)
+
+	db.Open()
+
+	err := db.Migrate(
+		&e.User{},
+		&e.Location{},
+	)
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	redisConfig := redis.NewClient(&redis.Options{
 		Addr:     "localhost:6379",
@@ -44,18 +55,8 @@ func main() {
 		},
 	)
 
-	err = http.ListenAndServe(":8080", router)
+	err = http.ListenAndServe(":3000", router)
 	if err != nil {
 		log.Fatal("ListenAndServe: ", err)
 	}
-}
-
-func dbConf(env string) *database.Config {
-	cfg, _ := ini.Load("./api/config/database.ini")
-	dbconf := new(database.Config)
-
-	cfg.MapTo(dbconf)
-	cfg.Section(env).MapTo(dbconf)
-
-	return dbconf
 }

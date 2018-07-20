@@ -1,31 +1,36 @@
 package repository
 
 import (
-	"database/sql"
-	"fmt"
-
 	e "github.com/adham90/boilerplate/pkg/entity"
+	"github.com/go-pg/pg"
 )
 
 // Postgres database struct
-type Postgres struct{ DB *sql.DB }
+type Postgres struct{ DB *pg.DB }
 
 // Find return user by id
-func (pg *Postgres) Find(id string) (*e.User, error) {
-	db := pg.DB
+func (p *Postgres) Find(id int) (*e.User, error) {
+	db := p.DB
+	user := e.User{}
 
-	r := e.User{}
+	err := db.Model(&user).Where("id = ?", id).Select()
 
-	q := fmt.Sprintf("SELECT id, uuid, github_id FROM users WHERE id = %s limit 1", id)
-
-	err := db.QueryRow(q).Scan(
-		&r.ID,
-		&r.UUID,
-		&r.GithubID,
-	)
 	if err != nil {
 		return nil, err
 	}
 
-	return &r, nil
+	return &user, nil
+}
+
+// Save return true or false with the error
+func (p *Postgres) Save(u e.User) (*e.User, error) {
+	db := p.DB
+
+	err := db.Insert(&u)
+
+	if err != nil {
+		return &u, err
+	}
+
+	return &u, nil
 }

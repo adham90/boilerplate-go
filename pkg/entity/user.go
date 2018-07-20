@@ -8,14 +8,14 @@ import (
 
 //User data
 type User struct {
-	ID        uint       `sql:"id"`
-	UUID      uuid.UUID  `sql:"uuid"`
-	GithubID  string     `sql:"github_id"`
-	Name      string     `sql:"name"`
-	Email     string     `sql:"email"`
-	CreatedAt time.Time  `sql:"created_at"`
-	UpdatedAt time.Time  `sql:"updated_at"`
-	DeletedAt *time.Time `sql:"deleted_at"`
+	ID        int        `jsonapi:"primary,users"`
+	UUID      uuid.UUID  `sql:",type:uuid" jsonapi:"attr,uuid"`
+	GithubID  string     `jsonapi:"attr,github_id"`
+	Name      string     `jsonapi:"attr,name"`
+	Email     string     `jsonapi:"attr,email"`
+	CreatedAt time.Time  `sql:"default:now()" jsonapi:"attr,created_at"`
+	UpdatedAt time.Time  `sql:"default:now()" jsonapi:"attr,updated_at"`
+	DeletedAt *time.Time `jsonapi:"attr,deleted_at"`
 }
 
 // NewUser Create new user object
