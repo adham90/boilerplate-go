@@ -8,8 +8,8 @@ import (
 // Postgres database struct
 type Postgres struct{ DB *pg.DB }
 
-// Find return user by id
-func (p *Postgres) Find(id int) (*e.User, error) {
+// GetByID return user by id
+func (p *Postgres) GetByID(id int) (*e.User, error) {
 	db := p.DB
 	user := e.User{}
 
@@ -23,14 +23,14 @@ func (p *Postgres) Find(id int) (*e.User, error) {
 }
 
 // Save return true or false with the error
-func (p *Postgres) Save(u e.User) (*e.User, error) {
+func (p *Postgres) Store(u *e.User) (*e.User, error) {
 	db := p.DB
 
 	err := db.Insert(&u)
 
 	if err != nil {
-		return &u, err
+		return u, err
 	}
 
-	return &u, nil
+	return u, nil
 }

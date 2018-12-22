@@ -12,32 +12,27 @@ type Database struct {
 	Name               string
 	Port               string
 	LogMode            bool
-	DB                 *pg.DB
 }
 
 // Open create new Database connection
 func (d *Database) Open() *pg.DB {
-	d.DB = pg.Connect(&pg.Options{
+	db := pg.Connect(&pg.Options{
 		Database: d.Name,
 		User:     d.Username,
 		Password: d.Password,
 	})
 
 	var n int
-	_, err := d.DB.QueryOne(pg.Scan(&n), "SELECT 1")
+	_, err := db.QueryOne(pg.Scan(&n), "SELECT 1")
 	if err != nil {
 		return nil
 	}
 
-	return d.DB
+	return db
 }
 
-// Migrate will update the database with new add col and tables
 func (d *Database) Migrate(entities ...interface{}) error {
-	if d.DB == nil {
-		d.Open()
-	}
-	db := d.DB
+	db := d.Open()
 
 	for _, entity := range entities {
 		err := db.CreateTable(entity, &orm.CreateTableOptions{
